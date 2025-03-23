@@ -1,0 +1,11 @@
+{
+    "HEADER_KEY": "stock-x-key",
+    "HEADER_VALUE": "iQItJxWZ6XpQCHeeWf4J",
+    "FINANCIAL_DATA_PATH":"./nse_magic_formula_results.csv",
+    "STOCKS_FILE" : "./stocks_list.txt",
+    "DB_NAME": "stockdb",
+    "DB_USER": "postgres",
+    "DB_PASSWORD": "12345",
+    "DB_HOST": "localhost",
+    "DB_PORT": 5432
+}

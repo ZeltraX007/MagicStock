@@ -1,0 +1,5 @@
+pandas
+yahooquery
+flask
+apscheduler
+psycopg2
