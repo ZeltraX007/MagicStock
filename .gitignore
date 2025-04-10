@@ -1,0 +1,4 @@
+backend/
+app.log
+magicenv
+**/__pycache__/

@@ -1,0 +1,1 @@
+sudo docker --debug push zeltrax007/pax:magicstock_v0.0.1

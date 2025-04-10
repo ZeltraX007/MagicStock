@@ -5,7 +5,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from app import dbconnection
 
 def get_all_nse_stock():
-    """Fetches all NSE stock symbols and stores them in a file."""
+    """Fetches all NSE stock symbols and stores them in a table."""
     nse_url = "https://archives.nseindia.com/content/equities/EQUITY_L.csv"
 
     try:
@@ -31,8 +31,16 @@ def get_all_nse_stock():
             ON CONFLICT (stock_symbol) DO NOTHING;
         """
 
+        query1 = """
+            INSERT INTO stock_financials (stock_symbol)
+            VALUES (%s)
+            ON CONFLICT (stock_symbol) DO NOTHING;"""
+
         cursor.executemany(query, stock_symbols)
 
+        cursor.executemany(query1, stock_symbols)
+
+        # Commit the transaction
         dbconnection.commit()
         cursor.close()
 
@@ -45,7 +53,7 @@ def get_all_nse_stock():
 scheduler = BackgroundScheduler()
 
 # Run the job every 24 hours (instead of 20 seconds)
-scheduler.add_job(func=get_all_nse_stock, trigger="interval", seconds=20)
+scheduler.add_job(func=get_all_nse_stock, trigger="interval", seconds=100)
 
 # Start the scheduler
 scheduler.start()

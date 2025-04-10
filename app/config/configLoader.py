@@ -2,13 +2,18 @@ import json
 import os
 import sys
 from app import app
+from pathlib import Path
 
 CONFIG = None  # Global variable for config
 
 def load_config():
     """Loads the configuration file and sets it as a global variable."""
     global CONFIG
-    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    config_path = os.getenv("APP_CONFIG_PATH")
+    if config_path:
+        config_path = Path(config_path)
+    else:
+        config_path = Path(__file__).resolve().parents[2] / "backend" / "config.json"
     
     try:
         with open(config_path, "r") as config_file:

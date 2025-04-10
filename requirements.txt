@@ -2,4 +2,5 @@ pandas
 yahooquery
 flask
 apscheduler
-psycopg2
+# lxml==5.3.2
+psycopg2-binary

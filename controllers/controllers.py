@@ -1,10 +1,18 @@
 from flask import request, jsonify
 from app import app
-import services.services as services  # Ensure correct import
+import services.services as services
+from app.config.configLoader import CONFIG
 
 @app.route('/getStockRanks', methods=['POST'])
 def stock_ranks():
     app.logger.info("Entering endpoint '/getStockRanks' route")
+
+    incoming_header_value = request.headers.get(CONFIG.get("HEADER_KEY"))
+    if incoming_header_value != CONFIG.get("HEADER_VALUE"):
+        app.logger.warning("Unauthorized access attempt: Invalid header key or value")
+        return jsonify({"error": "Unauthorized access"}), 401
+
+    # Validate the header
 
     try:
         # Get JSON data from request
