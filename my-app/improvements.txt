@@ -1,0 +1,8 @@
+Charting: Show visual trends (e.g., bar charts for Magic Rank) using libraries like Chart.js or Recharts.
+
+Search bar to find a stock by name.
+
+Dark mode toggle.
+
+Add favicon and meta tags in index.html.
+

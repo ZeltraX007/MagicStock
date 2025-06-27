@@ -1,53 +1,90 @@
-import React, { useState } from "react";
-import logo from "../assets/logo.png";
-import {HiMenu, HiX} from "react-icons/hi";
+import { useEffect, useState } from 'react';
+import { Disclosure } from '@headlessui/react';
+import { HiMenu, HiX } from 'react-icons/hi';
+import { FiSun, FiMoon } from 'react-icons/fi';
+import logo from '../assets/logo.png';
+
 const Header: React.FC = () => {
-    // const [scrolled, setScrolled] = useState(false);
-    const [menuOpen, setMenuOpen] = useState(false);
+   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-    // useEffect(() => {
-    //     const handleScroll = () => {
-    //         setScrolled(window.scrollY > 0);
-    //     };
+  useEffect(() => {
+    // Set initial theme based on localStorage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      document.documentElement.classList.add('dark');
+      setTheme('dark');
+    }
+  }, []);
 
-    //     window.addEventListener("scroll", handleScroll);
-    //     return () => window.removeEventListener("scroll", handleScroll);
-    // }, []);
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
+
 
   return (
-    //uncomment the below line to add a shadow effect on scroll
-    // <header className={`fixed top-0 left-0 w-full z-50 text-black p-4 shadow-md mx-auto mt-2 transition-all border-white/40 rounded-lg
-    // ${scrolled ?
-    //     "bg-white/1 backdrop-blur-xs backdrop-saturate-50 shadow-md" : 
-    //     "bg-transparent"}`}>
-    <header className={`sticky top-0 left-0 w-full z-50 text-black p-4 shadow-md mx-auto transition-all border-white/40 bg-white/1 backdrop-blur-xs backdrop-saturate-50`}>
-    <div className="flex justify-between items-center">
-      <a href="/" className="flex items-center">
-        <img src={logo} alt="Magic Stock Logo" className="h-8 w-auto" />
-      </a>
+    <Disclosure as="header" className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 text-black dark:text-white backdrop-blur-none shadow-sm transition-colors duration-300">
+      {({ open }) => (
+        <>
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              {/* Logo */}
+              <a href="/" className="flex items-center">
+                <img src={logo} alt="Magic Stock Logo" className="h-12 w-auto" />
+              </a>
 
-        {/* Hamburger Menu for small screens */}
-        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300">
-          {menuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
-        </button>
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex md:space-x-10 absolute left-1/2 transform -translate-x-1/2">
+                {['Home', 'Dashboard', 'About', 'Contact'].map((label) => (
+                  <a
+                    key={label}
+                    href={`/${label.toLowerCase()}`}
+                    className="text-sm transition duration-150"
+                  >
+                    {label}
+                  </a>
+                ))}
+              </div>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex space-x-6 absolute left-1/2 transform -translate-x-1/2">
-          <a href="/" className="">Home</a>
-          <a href="/about" className="">About</a>
-          <a href="/contact" className="">Contact</a>
-        </nav>
-      </div>
+              {/* Right controls: Theme toggle + Menu button */}
+              <div className="flex items-center space-x-4">
+                {/* Theme Toggle Button */}
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
+                  title="Toggle theme"
+                >
+                  {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
+                </button>
 
-      {/* Mobile Nav Dropdown */}
-      {menuOpen && (
-        <nav className="md:hidden mt-4 px-4 space-y-4 text-center">
-          <a href="/" className="block pb-2">Home</a>
-          <a href="/about" className="block pb-2">About</a>
-          <a href="/contact" className="block pb-2">Contact</a>
-        </nav>
+              {/* Mobile menu button */}
+                <Disclosure.Button className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600">
+                  {open ? <HiX size={24} /> : <HiMenu size={24} />}
+                </Disclosure.Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Menu */}
+          <Disclosure.Panel className="md:hidden bg-white/30 dark:bg-gray-900/30 backdrop-blur-none shadow-sm transition-colors duration-300">
+          <div className="px-4 pt-4 pb-3 space-y-2 text-center">
+            {['Home', 'Dashboard' ,'About', 'Contact'].map((label) => (
+              <a
+                key={label}
+                href={`/${label.toLowerCase()}`}
+                className="block px-3 py-2 rounded-md text-base hover:text-shadow"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </Disclosure.Panel>
+        </>
       )}
-    </header>
+    </Disclosure>
   );
 };
 

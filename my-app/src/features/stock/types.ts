@@ -3,6 +3,7 @@ export interface StockData {
     marketCapCategory: string;
     rank: number;
     stock: string;
+    lastRank: number;
 }
 
 export interface Stock {

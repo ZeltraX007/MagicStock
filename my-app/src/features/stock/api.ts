@@ -15,6 +15,7 @@ export const fetchStockData = async (payload: fetchStockDataPayload): Promise<St
         },
         body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error("Failed to fetch stocks");
+    console.log(res)
+    if (res.status != 200) throw new Error("Failed to fetch stocks");
     return res.json();
-} 
+}

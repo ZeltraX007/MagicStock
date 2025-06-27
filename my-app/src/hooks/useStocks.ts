@@ -8,19 +8,21 @@ export const useStocks = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchData = async () => {
+        fetchData();
+    }, []);
+
+     const fetchData = async () => {
             try {
                 const data = await fetchStockData({ marketCap: "" });
                 setStocks(data);
-            } catch {
-                setError("Failed to fetch stocks");
+            } catch(error) {
+                console.log(error)
+                setError("We’re having trouble loading stock data. Please try again later.");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
-    }, []);
 
     return { stocks, loading, error };
 };
