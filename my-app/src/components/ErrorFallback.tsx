@@ -23,3 +23,16 @@ export const ErrorFallback = ({ message }: { message: string }) => (
     </button>
   </div>
 );
+
+interface StatsErrorFallbackProps {
+  message: string;
+}
+
+export const StatsErrorFallback = ({ message }: StatsErrorFallbackProps) => {
+  return (
+    <div className="bg-red-100 dark:bg-gray-800 text-red-800 dark:text-red-200 p-4 rounded-md text-center shadow-sm">
+      <h3 className="font-semibold text-lg mb-1">Error Loading Stats</h3>
+      <p className="text-sm">{message}</p>
+    </div>
+  );
+};

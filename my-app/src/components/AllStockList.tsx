@@ -10,7 +10,7 @@ export const AllStockList = () => {
   if (loading)
     return (
       <div className="text-black dark:text-white flex justify-center items-center flex-1">
-        <div className="w-10 h-10 border-4 border-blue-500 dark:border-white border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-blue-500 dark:border-white border-t-transparent dark:border-t-transparent rounded-full animate-spin" />
       </div>
     );
 

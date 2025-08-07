@@ -38,10 +38,10 @@ const Header: React.FC = () => {
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex md:space-x-10 absolute left-1/2 transform -translate-x-1/2">
-                {['Home', 'Dashboard', 'About', 'Contact'].map((label) => (
+                {['Home', 'Dashboard', 'About', 'How to Invest'].map((label) => (
                   <a
                     key={label}
-                    href={`/${label.toLowerCase()}`}
+                    href={`/${label.toLowerCase().replace(/ /g, '-')}`}
                     className="text-sm transition duration-150"
                   >
                     {label}
@@ -71,10 +71,10 @@ const Header: React.FC = () => {
           {/* Mobile Menu */}
           <Disclosure.Panel className="md:hidden bg-white/30 dark:bg-gray-900/30 backdrop-blur-none shadow-sm transition-colors duration-300">
           <div className="px-4 pt-4 pb-3 space-y-2 text-center">
-            {['Home', 'Dashboard' ,'About', 'Contact'].map((label) => (
+            {['Home', 'Dashboard' ,'About', 'How to Invest'].map((label) => (
               <a
                 key={label}
-                href={`/${label.toLowerCase()}`}
+                href={`/${label.toLowerCase().replace(/ /g, '-')}`}
                 className="block px-3 py-2 rounded-md text-base hover:text-shadow"
               >
                 {label}

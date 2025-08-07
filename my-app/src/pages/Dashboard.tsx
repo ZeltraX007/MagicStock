@@ -1,5 +1,14 @@
 import { AllStockList } from "../components/AllStockList";
+import { StatsWrapper } from "../components/StatsWrapper";
 
-export default function Dashboard() {
-  return <AllStockList />;
-}
+const Dashboard = () => {
+
+  return (
+    <>
+      <StatsWrapper/>
+      <AllStockList />
+    </>
+  );
+};
+
+export default Dashboard;
