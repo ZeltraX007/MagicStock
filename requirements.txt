@@ -4,3 +4,6 @@ flask
 apscheduler
 # lxml==5.3.2
 psycopg2-binary
+flask-cors
+sqlalchemy
+curl_cffi

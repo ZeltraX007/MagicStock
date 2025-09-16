@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 import logging
 import json
 from app.utils import logger
@@ -9,7 +10,8 @@ from pathlib import Path
 
 # from app import configuration
 
-app=Flask(__name__)
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes and origins by default
 
 config_path = os.getenv("APP_CONFIG_PATH")
 if config_path:
@@ -31,5 +33,5 @@ dbconnection = dbConfig.create_db_connection(CONFIG)
 
 
 from controllers import controllers
-## import services.stack_stock_service   # Uncomment this line if you want to fill data in stock list table
-# import services.finantialScheduler 
+import services.getStockNames   # Uncomment this line if you want to fill data in stock list table
+import services.finantialScheduler 

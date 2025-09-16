@@ -1,12 +1,10 @@
 from app import app
 import pandas as pd
-import json
-from app.config.configLoader import CONFIG
 from app import dbconnection
 
 def getStockRanks(data, headers):
     """
-    Rank stocks according to the Magic Formula by Joel Greenblatt and return JSON output with Market Cap Category.
+    Return ranked stocks precomputed in stock_financials table.
 
     Args:
         data (dict): Request data containing "marketCap".
@@ -27,70 +25,101 @@ def getStockRanks(data, headers):
         return None, ValueError("Invalid marketCap value. Must be one of: LARGE, MID, SMALL.")
 
     try:
-        # Load from database instead of CSV
+        # Load precomputed ranks from database
         query = """
             SELECT 
-                stock_symbol AS Stock, 
-                earnings_yield AS "Earnings Yield", 
-                return_on_capital AS "Return on Capital", 
-                market_cap AS "Market Cap" 
-            FROM stock_financials;
+                stock_symbol AS stock,
+                magic_formula_rank AS "magicFormulaRank",
+                rank,
+                market_cap_category AS "marketCapCategory",
+                last_rank AS "lastRank"
+            FROM stock_financials
+            WHERE magic_formula_rank IS NOT NULL;
         """
-        df = pd.read_sql_query(query, dbconnection)
-        app.logger.info(f"📊 Loaded {len(df)} rows from stock_financials table")
-
-        # Convert Market Cap to numeric for filtering
-        df["Market Cap"] = pd.to_numeric(df["Market Cap"], errors="coerce")
-
-        # Function to categorize market cap
-        def categorize_market_cap(value):
-            if value > 200_000_000_000:
-                return "LARGE"
-            elif 50_000_000_000 <= value <= 200_000_000_000:
-                return "MID"
-            elif 5_000_000_000 <= value <= 50_000_000_000:
-                return "SMALL"
-            else:
-                return "NO CAP"
-
-        # Assign Market Cap Category
-        df["Market Cap Category"] = df["Market Cap"].apply(categorize_market_cap)
-        app.logger.info("🏷️ Assigned Market Cap Categories")
+        engine = dbconnection["engine"]
+        df = pd.read_sql_query(query, engine)
+        app.logger.info(f"📊 Loaded {len(df)} ranked stocks from DB")
 
         # Apply filtering if marketCap was provided
         if market_cap_category:
-            df = df[df["Market Cap Category"] == market_cap_category]
+            df = df[df["marketCapCategory"] == market_cap_category]
 
-        # Ensure column names are correct
-        df.columns = ["Stock", "Earnings Yield", "Return on Capital", "Market Cap", "Market Cap Category"]
-
-        # Rank stocks based on Earnings Yield and ROC
-        df["Earnings Yield Rank"] = df["Earnings Yield"].rank(ascending=False, method="min")
-        df["ROC Rank"] = df["Return on Capital"].rank(ascending=False, method="min")
-        app.logger.info("📈 Ranked stocks by Earnings Yield and Return on Capital")
-
-        # Compute the final Magic Formula rank
-        df["Magic Formula Rank"] = df["Earnings Yield Rank"] + df["ROC Rank"]
-        # Sort stocks by Magic Formula Rank 
-        df = df.sort_values(by="Magic Formula Rank").reset_index(drop=True)
-        df["Rank"] = df.index + 1
-        app.logger.info("🎯 Calculated final Magic Formula Rank")
-
-        # Rename columns for output
-        df = df.rename(columns={
-            "Stock": "stock",
-            "Magic Formula Rank": "magicFormulaRank",
-            "Rank": "rank",
-            "Market Cap Category": "marketCapCategory"
-        })
+        # Sort by rank to ensure proper order
+        df = df.sort_values(by="rank").reset_index(drop=True)
 
         # Convert to list of dicts
-        stocks = df[["stock", "magicFormulaRank", "rank", "marketCapCategory"]].to_dict(orient="records")
-        app.logger.info(f"✅ Prepared response with {len(stocks)} ranked stocks")
+        stocks = df[["stock", "magicFormulaRank", "rank", "marketCapCategory","lastRank"]].to_dict(orient="records")
+        app.logger.info(f"✅ Prepared response with {len(stocks)} stocks")
 
         return stocks, None
 
     except Exception as e:
-        app.logger.error(f"❌ Error processing stock ranking: {e}")
+        app.logger.error(f"❌ Error retrieving ranked stocks: {e}")
         return None, e
-    
+
+
+def getStats():
+    """
+    Get summary statistics from the stock_financials table.
+
+    Returns:
+        tuple: (statistics as dict, error if any)
+    """
+    app.logger.info("📊 Entered getStockStats function")
+
+    try:
+        query = """
+            SELECT 
+                stock_symbol,
+                earnings_yield,
+                return_on_capital,
+                market_cap_category,
+                rank,
+                last_rank
+            FROM stock_financials
+            WHERE rank IS NOT NULL;
+        """
+        engine = dbconnection["engine"]
+        df = pd.read_sql_query(query, engine)
+
+        total_stocks = len(df)
+
+        # Market cap distribution
+        market_cap_dist = df["market_cap_category"].value_counts().to_dict()
+
+        # Average metrics
+        avg_ey = df["earnings_yield"].mean()
+        avg_roc = df["return_on_capital"].mean()
+
+        # Rank movement (positive means stock moved up in rank)
+        df["rank_change"] = df["last_rank"] - df["rank"]
+        avg_rank_change = df["rank_change"].mean()
+        max_gainer = df.loc[df["rank_change"].idxmax()] if not df.empty else None
+        max_loser = df.loc[df["rank_change"].idxmin()] if not df.empty else None
+
+        stats = {
+            "totalStocks": total_stocks,
+            "marketCapDistribution": market_cap_dist,
+            "averageEarningsYield": round(avg_ey, 4) if avg_ey else None,
+            "averageReturnOnCapital": round(avg_roc, 4) if avg_roc else None,
+            "averageRankChange": round(avg_rank_change, 2) if avg_rank_change else None,
+            "biggestGainer": {
+                "stock": max_gainer["stock_symbol"],
+                "rankChange": int(max_gainer["rank_change"]),
+                "rank": int(max_gainer["rank"]),
+                "lastRank": int(max_gainer["last_rank"])
+            } if max_gainer is not None else None,
+            "biggestLoser": {
+                "stock": max_loser["stock_symbol"],
+                "rankChange": int(max_loser["rank_change"]),
+                "rank": int(max_loser["rank"]),
+                "lastRank": int(max_loser["last_rank"])
+            } if max_loser is not None else None,
+        }
+
+        app.logger.info("✅ Stock statistics computed successfully.")
+        return stats, None
+
+    except Exception as e:
+        app.logger.error(f"❌ Failed to compute stock stats: {e}")
+        return None, e

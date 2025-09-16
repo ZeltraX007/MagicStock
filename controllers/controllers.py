@@ -31,3 +31,31 @@ def stock_ranks():
     except Exception as e:
         app.logger.error(f"Error processing request: {e}")
         return jsonify({"status": "error", "message": "Invalid request"}), 400
+    
+@app.route('/getStats', methods=['GET'])
+def get_stats():
+    app.logger.info("Entering endpoint '/getStats' route")
+
+    incoming_header_value = request.headers.get(CONFIG.get("HEADER_KEY"))
+    if incoming_header_value != CONFIG.get("HEADER_VALUE"):
+        app.logger.warning("Unauthorized access attempt: Invalid header key or value")
+        return jsonify({"error": "Unauthorized access"}), 401
+
+    # Validate the header
+
+    try:
+        # Get JSON data from request
+        result, err = services.getStats()
+        
+        if err:
+            return jsonify({"status": "error", "message": str(err)}), 400
+
+        response = {
+            "status": "success",
+            "stats": result
+        }
+        return jsonify(response)
+
+    except Exception as e:
+        app.logger.error(f"Error processing request: {e}")
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
